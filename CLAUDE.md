@@ -50,3 +50,5 @@ Antes de implementar una feature, verificar si existe una spec asociada y trabaj
 - **`next/image`**: `images.domains` está deprecado (usar `images.remotePatterns`) y cambiaron los defaults de `minimumCacheTTL`, `imageSizes` y `qualities`.
 
 Referencias útiles dentro de los docs empaquetados: `01-app/01-getting-started/` para las bases y `01-app/02-guides/upgrading/version-16.md` para el listado completo de breaking changes.
+
+# :D
