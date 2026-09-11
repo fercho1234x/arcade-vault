@@ -6,6 +6,9 @@ import {
 } from "next/font/google";
 import "./globals.css";
 
+import { Nav } from "@/components/nav";
+import { SessionProvider } from "@/components/session-provider";
+
 const pressStart2P = Press_Start_2P({
   variable: "--font-press-start-2p",
   subsets: ["latin"],
@@ -42,7 +45,25 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <div className="av-bg" aria-hidden="true" />
         <div className="av-noise" aria-hidden="true" />
-        <div id="root">{children}</div>
+        <div id="root">
+          <SessionProvider>
+            <Nav />
+            <main className="av-main">{children}</main>
+            <footer
+              style={{
+                borderTop: "1px solid var(--line)",
+                padding: "20px 32px",
+                textAlign: "center",
+                color: "var(--ink-faint)",
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.16em",
+              }}
+            >
+              © 2026 ARCADE VAULT · HECHO CON PIXELES Y NEÓN · v2.6.0
+            </footer>
+          </SessionProvider>
+        </div>
       </body>
     </html>
   );
