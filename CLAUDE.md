@@ -4,15 +4,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 @AGENTS.md
 
-## Comandos
-
-```bash
-npm run dev      # servidor de desarrollo (Turbopack por defecto en Next 16)
-npm run build    # build de producción (también Turbopack por defecto)
-npm start        # sirve el build de producción
-npm run lint     # ESLint (el script es `eslint` a secas: `next lint` fue eliminado en v16)
-```
-
 No hay framework de tests configurado todavía. Si se agrega uno, documentar aquí el comando para ejecutar un test individual.
 
 Para verificar un cambio en caliente: `npm run dev` y revisar el indicador de dev de Next + logs de navegador y servidor. El flujo recomendado está en `node_modules/next/dist/docs/01-app/02-guides/ai-agents.md`.
@@ -51,4 +42,5 @@ Antes de implementar una feature, verificar si existe una spec asociada y trabaj
 
 Referencias útiles dentro de los docs empaquetados: `01-app/01-getting-started/` para las bases y `01-app/02-guides/upgrading/version-16.md` para el listado completo de breaking changes.
 
-# :D
+# Skills
+Usa siempre /frontend-desing para diseñar la interfaz de usuario.

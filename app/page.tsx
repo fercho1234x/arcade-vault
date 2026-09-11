@@ -1,69 +1,112 @@
-import Image from "next/image";
+// Página provisional: verifica que el tema global quede aplicado.
+// Se reemplazará por la biblioteca real cuando exista su spec.
+
+const GAMES = [
+  {
+    id: "bloque-buster",
+    title: "BLOQUE BUSTER",
+    short: "Rebota la pelota y destruye muros de neón.",
+    cat: "ARCADE",
+    cover: "cover-bricks",
+    best: 28450,
+  },
+  {
+    id: "caida",
+    title: "CAÍDA",
+    short: "Encaja las piezas antes de que el techo te aplaste.",
+    cat: "PUZZLE",
+    cover: "cover-tetro",
+    best: 184220,
+  },
+  {
+    id: "serpentina",
+    title: "SERPENTINA",
+    short: "Crece sin morder tu propia cola.",
+    cat: "ARCADE",
+    cover: "cover-snake",
+    best: 7820,
+  },
+  {
+    id: "invasores",
+    title: "INVASORES",
+    short: "Defiende el planeta de filas alienígenas.",
+    cat: "SHOOTER",
+    cover: "cover-invaders",
+    best: 54190,
+  },
+];
+
+const TOP = [
+  { rank: 1, name: "PX_KAI", score: 184220 },
+  { rank: 2, name: "NEONFOX", score: 176980 },
+  { rank: 3, name: "Z3R0COOL", score: 168140 },
+  { rank: 4, name: "MAGENTA88", score: 151600 },
+];
+
+const formatScore = (n: number) => n.toLocaleString("es-MX");
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <>
+      <main className="av-main">
+        <section className="av-hero">
+          <h1>ARCADE VAULT</h1>
+          <p className="sub">
+            INSERTA MONEDA PARA JUGAR<span className="blink">_</span>
           </p>
+        </section>
+
+        <div className="av-grid">
+          {GAMES.map((game) => (
+            <article key={game.id} className="card">
+              <div className="cover">
+                <div className={`cover-bg ${game.cover}`} />
+                <span className="label">{game.cat}</span>
+              </div>
+              <div className="meta">
+                <h2 className="title">{game.title}</h2>
+                <p className="desc">{game.short}</p>
+              </div>
+              <div className="row">
+                <span className="score-badge">
+                  Récord
+                  <b>{formatScore(game.best)}</b>
+                </span>
+                <button type="button" className="btn">
+                  Jugar
+                </button>
+              </div>
+            </article>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="av-hall">
+          <div className="leaderboard">
+            <h3>MEJORES PUNTAJES</h3>
+            {TOP.map((row) => (
+              <div key={row.name} className={`lb-row${row.rank <= 3 ? ` top${row.rank}` : ""}`}>
+                <span className="rk">{row.rank}</span>
+                <span className="pl">{row.name}</span>
+                <span className="sc">{formatScore(row.score)}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
-    </div>
+
+      <footer
+        style={{
+          borderTop: "1px solid var(--line)",
+          padding: "20px 32px",
+          textAlign: "center",
+          color: "var(--ink-faint)",
+          fontFamily: "var(--mono)",
+          fontSize: 11,
+          letterSpacing: "0.16em",
+        }}
+      >
+        © 2026 ARCADE VAULT · HECHO CON PIXELES Y NEÓN
+      </footer>
+    </>
   );
 }
