@@ -48,8 +48,13 @@
   --bronze: #d97a3a;
   --line: rgba(0, 245, 255, 0.18);
   --line-2: rgba(255, 255, 255, 0.06);
-  --pixel: var(--font-press-start-2p), system-ui, monospace;
-  --mono: var(--font-jetbrains-mono), var(--font-courier-prime), "Courier New", monospace;
+  /* Los nombres reales de familia, idénticos a references/templates/styles.css.
+   * Las variables de next/font (--font-press-start-2p y compañía) añaden una
+   * familia "<fuente> Fallback" con size-adjust delante de system-ui, y los
+   * glifos que la fuente no trae (♥, por ejemplo) salían escalados. Las
+   * @font-face las sigue declarando next/font desde app/layout.tsx. */
+  --pixel: "Press Start 2P", system-ui, monospace;
+  --mono: "JetBrains Mono", "Courier Prime", "Courier New", monospace;
 }
 
 * { box-sizing: border-box; }
@@ -996,4 +1001,45 @@ a { color: inherit; text-decoration: none; }
   }
   .hall-table .tr { opacity: 1; }
   .toast-saved { width: 22ch; }
+}
+
+/* ===== añadido de la spec 01 — repaso responsive =====
+ * Dos desbordes horizontales medidos a 375px en las cinco rutas. Ambos vienen
+ * del tema portado; se corrigen aquí sin tocar el bloque original.
+ */
+
+/* 1. El panel móvil cerrado queda a la derecha con translateX(100%) y seguía
+ *    contando en el scrollWidth del documento. Se saca del flujo mientras está
+ *    cerrado, retrasando `visibility` hasta el final de la animación de salida. */
+.av-mobile-panel {
+  visibility: hidden;
+  transition: transform 220ms ease, visibility 0s linear 220ms;
+}
+.av-mobile-panel.open {
+  visibility: visible;
+  transition: transform 220ms ease, visibility 0s linear 0s;
+}
+
+/* 2. Por debajo de 840px el panel ya ofrece el acceso a la cuenta, igual que
+ *    reemplaza a .links y a .coin-counter. Mantener además el botón de sesión
+ *    en la barra empujaba la hamburguesa fuera de la pantalla a 375px. */
+@media (max-width: 840px) {
+  .av-nav .auth-btn { display: none; }
+}
+
+/* 3. En el Salón, la columna JUGADOR es `1fr` y su `min-width: auto` impedía
+ *    que la grilla se encogiera por debajo del nombre más largo, empujando la
+ *    columna FECHA 11px fuera de la pantalla a 375px. */
+@media (max-width: 720px) {
+  .hall-table .th,
+  .hall-table .tr {
+    grid-template-columns: 46px minmax(0, 1fr) 78px 78px;
+  }
+  .hall-table .th > div,
+  .hall-table .tr > div {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
