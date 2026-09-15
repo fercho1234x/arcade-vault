@@ -1,24 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useActionState, useState } from "react";
 
-import { useSession } from "@/components/session-provider";
+import { signIn, signUp, type AuthState } from "@/app/auth/actions";
+import { USERNAME_INVALID, USERNAME_PATTERN } from "@/lib/auth-errors";
+
+type Tab = "in" | "up";
+
+const INITIAL_STATE: AuthState = { error: null };
 
 export function AuthForm() {
   const router = useRouter();
-  const { signIn } = useSession();
-
-  const [tab, setTab] = useState<"in" | "up">("in");
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
-  const [email, setEmail] = useState("");
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    signIn(user || "PLAYER1");
-    router.push("/");
-  };
+  const [tab, setTab] = useState<Tab>("in");
 
   return (
     <div className="av-auth-wrap fade-in">
@@ -40,52 +34,22 @@ export function AuthForm() {
         </div>
 
         <div className="auth-tabs">
-          <button className={tab === "in" ? "on" : ""} onClick={() => setTab("in")}>
+          <button
+            className={tab === "in" ? "on" : ""}
+            onClick={() => setTab("in")}
+          >
             INICIAR SESIÓN
           </button>
-          <button className={tab === "up" ? "on" : ""} onClick={() => setTab("up")}>
+          <button
+            className={tab === "up" ? "on" : ""}
+            onClick={() => setTab("up")}
+          >
             CREAR CUENTA
           </button>
         </div>
 
-        <form onSubmit={submit}>
-          <div className="field">
-            <label>Usuario</label>
-            <input
-              value={user}
-              onChange={(e) => setUser(e.target.value)}
-              placeholder="px_kai"
-            />
-          </div>
-          {tab === "up" && (
-            <div className="field slide-in">
-              <label>Correo electrónico</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="jugador@vault.gg"
-              />
-            </div>
-          )}
-          <div className="field">
-            <label>Contraseña</label>
-            <input
-              type="password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              placeholder="••••••••"
-            />
-          </div>
-
-          <button
-            className="btn lg"
-            type="submit"
-            style={{ width: "100%", marginTop: 8 }}
-          >
-            {tab === "in" ? "ENTRAR AL VAULT" : "CREAR Y JUGAR"}
-          </button>
-        </form>
+        {/* key={tab}: cambiar de pestaña remonta el formulario y limpia el error. */}
+        <AuthFields key={tab} tab={tab} />
 
         <button
           className="btn ghost"
@@ -119,5 +83,102 @@ export function AuthForm() {
         </div>
       </div>
     </div>
+  );
+}
+
+function AuthFields({ tab }: { tab: Tab }) {
+  const [state, formAction, isPending] = useActionState(
+    tab === "in" ? signIn : signUp,
+    INITIAL_STATE,
+  );
+
+  // Inputs controlados: React resetea los no controlados al terminar la
+  // action, y tras un error el jugador perdería lo que escribió.
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [clientError, setClientError] = useState<string | null>(null);
+
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (tab === "up" && !USERNAME_PATTERN.test(username.trim())) {
+      e.preventDefault();
+      setClientError(USERNAME_INVALID);
+      return;
+    }
+    setClientError(null);
+  };
+
+  const error = clientError ?? state.error;
+
+  return (
+    <form action={formAction} onSubmit={submit}>
+      {tab === "up" && (
+        <div className="field slide-in">
+          <label>Usuario</label>
+          <input
+            name="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="px_kai"
+            maxLength={10}
+            autoComplete="username"
+            required
+          />
+        </div>
+      )}
+      <div className="field">
+        <label>Correo electrónico</label>
+        <input
+          name="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="jugador@vault.gg"
+          autoComplete="email"
+          required
+        />
+      </div>
+      <div className="field">
+        <label>Contraseña</label>
+        <input
+          name="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          minLength={6}
+          autoComplete={tab === "in" ? "current-password" : "new-password"}
+          required
+        />
+      </div>
+
+      <button
+        className="btn lg"
+        type="submit"
+        disabled={isPending}
+        style={{ width: "100%", marginTop: 8 }}
+      >
+        {isPending
+          ? "CARGANDO..."
+          : tab === "in"
+            ? "ENTRAR AL VAULT"
+            : "CREAR Y JUGAR"}
+      </button>
+
+      {error && (
+        <p
+          className="mono"
+          aria-live="polite"
+          style={{
+            marginTop: 12,
+            fontSize: 11,
+            color: "var(--magenta)",
+            letterSpacing: "0.1em",
+          }}
+        >
+          ▸ ERROR: {error}
+        </p>
+      )}
+    </form>
   );
 }

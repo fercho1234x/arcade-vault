@@ -6,10 +6,12 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
 } from "react";
 
-export type StoredUser = { name: string };
+export type SessionUser = {
+  id: string;
+  name: string;
+};
 
 export type StoredScore = {
   game: string;
@@ -19,55 +21,32 @@ export type StoredScore = {
 };
 
 type SessionValue = {
-  user: StoredUser | null;
-  signIn: (name: string) => void;
-  signOut: () => void;
+  user: SessionUser | null;
   saveScore: (entry: Omit<StoredScore, "at">) => void;
 };
 
-const USER_KEY = "av_user";
+const LEGACY_USER_KEY = "av_user";
 const SCORES_KEY = "av_scores";
 
 const SessionContext = createContext<SessionValue | null>(null);
 
-export function SessionProvider({ children }: { children: React.ReactNode }) {
-  // Arranca en null a propósito: el servidor no tiene localStorage, así que el
-  // primer paint del cliente debe coincidir con el HTML sin sesión.
-  const [user, setUser] = useState<StoredUser | null>(null);
+export function SessionProvider({
+  initialUser,
+  children,
+}: {
+  initialUser: SessionUser | null;
+  children: React.ReactNode;
+}) {
+  // El usuario sale directamente de la prop: el layout lo vuelve a leer tras
+  // cada revalidatePath, y un useState(initialUser) no vería ese cambio.
+  const user = initialUser;
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(USER_KEY);
-      if (!raw) return;
-      const parsed: unknown = JSON.parse(raw);
-      if (parsed && typeof parsed === "object" && "name" in parsed) {
-        // La spec fija este patrón: el servidor no tiene localStorage, así que
-        // la sesión solo puede entrar después del primer paint. Es una única
-        // pasada al montar, no un ciclo de renders en cascada.
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setUser({ name: String((parsed as StoredUser).name) });
-      }
+      // Sesión falsa de la SPEC 01: ya no se lee, solo se limpia.
+      localStorage.removeItem(LEGACY_USER_KEY);
     } catch {
-      // localStorage bloqueado (modo privado, cookies desactivadas): sin sesión.
-    }
-  }, []);
-
-  const signIn = useCallback((name: string) => {
-    const next = { name: name.toUpperCase().slice(0, 10) };
-    setUser(next);
-    try {
-      localStorage.setItem(USER_KEY, JSON.stringify(next));
-    } catch {
-      // Sin persistencia la sesión vive solo en memoria.
-    }
-  }, []);
-
-  const signOut = useCallback(() => {
-    setUser(null);
-    try {
-      localStorage.removeItem(USER_KEY);
-    } catch {
-      // Nada que limpiar.
+      // localStorage bloqueado: nada que limpiar.
     }
   }, []);
 
@@ -83,8 +62,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<SessionValue>(
-    () => ({ user, signIn, signOut, saveScore }),
-    [user, signIn, signOut, saveScore],
+    () => ({ user, saveScore }),
+    [user, saveScore],
   );
 
   return (

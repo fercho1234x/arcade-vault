@@ -10,7 +10,16 @@ Para verificar un cambio en caliente: `npm run dev` y revisar el indicador de de
 
 ## Qué es este proyecto
 
-`arcade-vault` es una plataforma para jugar online y competir por puntaje (ver `README.md`). Hoy el repo es el scaffold de `create-next-app` sin lógica de dominio: `app/layout.tsx` (fuentes Geist + `globals.css`) y `app/page.tsx` (landing por defecto, con la metadata todavía en "Create Next App"). Toda la arquitectura del producto está por definirse: no hay capa de datos, auth, ni modelo de juegos/puntajes.
+`arcade-vault` es una plataforma para jugar online y competir por puntaje (ver `README.md`). Hoy el repo es el scaffold de `create-next-app` sin lógica de dominio: `app/layout.tsx` (fuentes Geist + `globals.css`) y `app/page.tsx` (landing por defecto, con la metadata todavía en "Create Next App"). La autenticación ya es real (SPEC 02, Supabase); el catálogo de juegos y los puntajes siguen siendo mock (`lib/games.ts`, `lib/scores.ts`, `av_scores` en localStorage).
+
+## Supabase
+
+- **Variables de entorno** (en `.env.local`, plantilla en `.env.example`): `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Solo se usa la clave publicable; nunca versionar `service_role` ni claves secretas.
+- **Clientes**: `lib/supabase/server.ts` (Server Components y Server Actions). `proxy.ts` → `lib/supabase/proxy.ts` solo refresca la sesión con `getClaims()`. Todavía no hay cliente de navegador.
+- **Sesión**: `lib/supabase/session.ts` → `getCurrentUser()`; `app/layout.tsx` lo pasa a `SessionProvider` como `initialUser`. Login/registro/logout son Server Actions en `app/auth/actions.ts`.
+- **Migraciones**: SQL versionado en `supabase/migrations/YYYYMMDDHHMMSS_descripcion.sql`, aplicado al proyecto remoto con el MCP (`apply_migration`, mismo `name` que el archivo).
+- **Tipos**: regenerar `lib/supabase/database.types.ts` con `generate_typescript_types` después de cada migración.
+- **Auth**: correo + contraseña, con "Confirm email" desactivado en el dashboard (si se reactiva, `signUp` no devuelve sesión y el registro falla).
 
 ## Flujo de trabajo: Spec Driven Design
 
@@ -43,4 +52,5 @@ Antes de implementar una feature, verificar si existe una spec asociada y trabaj
 Referencias útiles dentro de los docs empaquetados: `01-app/01-getting-started/` para las bases y `01-app/02-guides/upgrading/version-16.md` para el listado completo de breaking changes.
 
 # Skills
+
 Usa siempre /frontend-desing para diseñar la interfaz de usuario.

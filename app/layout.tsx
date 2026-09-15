@@ -8,6 +8,7 @@ import "./globals.css";
 
 import { Nav } from "@/components/nav";
 import { SessionProvider } from "@/components/session-provider";
+import { getCurrentUser } from "@/lib/supabase/session";
 
 const pressStart2P = Press_Start_2P({
   variable: "--font-press-start-2p",
@@ -36,7 +37,11 @@ export const metadata: Metadata = {
     "Juega clásicos arcade en el navegador y compite por el puntaje más alto.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Leer la sesión aquí evita el parpadeo de "Iniciar Sesión", a cambio de que
+  // todas las rutas se rendericen dinámicamente (el layout lee cookies).
+  const user = await getCurrentUser();
+
   return (
     <html
       lang="es"
@@ -46,7 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <div className="av-bg" aria-hidden="true" />
         <div className="av-noise" aria-hidden="true" />
         <div id="root">
-          <SessionProvider>
+          <SessionProvider initialUser={user}>
             <Nav />
             <main className="av-main">{children}</main>
             <footer
